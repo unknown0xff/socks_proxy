@@ -18,6 +18,10 @@
 #include <netinet/tcp.h>
 #include <pthread.h>
 
+#if defined(__APPLE__) && defined(__MACH__)
+#define SOL_TCP IPPROTO_TCP
+#endif
+
 #define BUFSIZE 65536
 #define IPSIZE 4
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
@@ -176,11 +180,7 @@ int app_connect(int type, void *buf, unsigned short int portnum)
 		} else if (ret == 0) {
 			struct addrinfo *r;
 			for (r = res; r != NULL; r = r->ai_next) {
-				fd = socket(r->ai_family, r->ai_socktype,
-					    r->ai_protocol);
-                if (fd == -1) {
-                    continue;
-                }
+				fd = socket(AF_INET, SOCK_STREAM, 0);
 				ret = connect(fd, r->ai_addr, r->ai_addrlen);
 				if (ret == 0) {
 					freeaddrinfo(res);
